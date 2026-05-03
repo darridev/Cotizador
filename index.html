@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Cotizador</title>
+<title>Cotizador Chapas</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#25D366">
@@ -13,7 +13,7 @@
 body { font-family: Arial; max-width:420px; margin:auto; padding:10px; background:#f5f5f5;}
 
 .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px;}
-button { padding:12px; border:none; border-radius:6px;}
+button { padding:12px; border:none; border-radius:6px; cursor:pointer;}
 
 .btn-medida { background:#ddd;}
 .btn-add { background:#25D366; color:white;}
@@ -25,7 +25,9 @@ button { padding:12px; border:none; border-radius:6px;}
 
 #resultado { background:white; padding:10px; margin-top:10px; white-space:pre-line;}
 
-input { width:100%; padding:10px; margin-top:5px;}
+input { width:100%; padding:10px; margin-top:3px;}
+label { font-size:13px; color:#333; margin-top:8px; display:block;}
+
 .config { background:#fff; padding:10px; margin-top:10px;}
 </style>
 </head>
@@ -61,8 +63,8 @@ input { width:100%; padding:10px; margin-top:5px;}
 
 <div id="resultado"></div>
 
-<button class="btn-add" onclick="copiar()">📋 Copiar</button>
-<button class="btn-sec" onclick="enviar()">📲 WhatsApp</button>
+<button class="btn-add" onclick="copiar(event)">📋 Copiar</button>
+<button class="btn-danger" onclick="limpiarTodo()">🧹 Limpiar</button>
 
 </div>
 
@@ -71,14 +73,25 @@ input { width:100%; padding:10px; margin-top:5px;}
 
 <h3>⚙️ Configuración</h3>
 
-<input id="cN27" placeholder="Precio N27">
-<input id="cN25" placeholder="Precio N25">
-<input id="cP80" placeholder="Perfil 80">
-<input id="cP100" placeholder="Perfil 100">
-<input id="cInteres" placeholder="Interés (1.41)">
-<input id="cFlete" placeholder="Flete">
+<label>Precio CH N27 (por metro)</label>
+<input id="cN27">
 
-<button onclick="guardar()">Guardar</button>
+<label>Precio CH N25 (por metro)</label>
+<input id="cN25">
+
+<label>Precio Perfil 80x40x6m</label>
+<input id="cP80">
+
+<label>Precio Perfil 100x40x6m</label>
+<input id="cP100">
+
+<label>Interés (ej: 1.41 = 41%)</label>
+<input id="cInteres">
+
+<label>Costo de Flete</label>
+<input id="cFlete">
+
+<button onclick="guardar()">💾 Guardar Configuración</button>
 
 </div>
 
@@ -92,6 +105,12 @@ let config = JSON.parse(localStorage.getItem("cfg")) || {
 
 function limpiarResultado(){
   resultado.innerText = "";
+}
+
+function limpiarTodo(){
+  items = [];
+  render();
+  limpiarResultado();
 }
 
 function mostrarTab(tab){
@@ -112,7 +131,7 @@ function guardar(){
     flete:+cFlete.value
   };
   localStorage.setItem("cfg",JSON.stringify(config));
-  alert("Guardado");
+  alert("Configuración guardada");
   cargarUI();
 }
 
@@ -209,36 +228,33 @@ function genCredito(){
   let c3=d.total/3, c4=d.total/4;
 
   resultado.innerText=
-`Credito:
+`Consulta x Credito:
 
 ${d.txt}
 Total $ ${Math.round(d.total).toLocaleString()}
 
 Plan 3 Cuotas Fijas:
- - Entrega y 2 Cuotas de $ ${Math.round(c3).toLocaleString()}
+Entrega y 2 Cuotas de $ ${Math.round(c3).toLocaleString()}
 
 Plan 4 Cuotas Fijas:
- - Entrega y 3 Cuotas de $ ${Math.round(c4).toLocaleString()}
+Entrega y 3 Cuotas de $ ${Math.round(c4).toLocaleString()}
 
+El Flete lo abona aparte cuando le descargan las chapas
 Flete $ ${config.flete.toLocaleString()}
-Se Abona en la entrega de los materiales.
 
-Tomamos el pedido, para entregar entre Jueves y Sabado
-
-Si esta interesado le paso link para que abone la entrega
-
-Solo tiene que pagar el flete cuando le bajan las chapas.`;
+Tomamos el pedido, le paso el link para que abone la entrega.
+Solo tiene que pagar el flete cuando le bajan las chapas.
+Dias de Entrega Jueves a la tarde, Viernes o Sabado.`;
 }
 
-function copiar(){
+function copiar(e){
   navigator.clipboard.writeText(resultado.innerText);
-  alert("Copiado");
-}
 
-function enviar(){
-  let num="5493794611965";
-  let url=`https://wa.me/${num}?text=${encodeURIComponent(resultado.innerText)}`;
-  window.open(url);
+  let btn = e.target;
+  let txt = btn.innerText;
+
+  btn.innerText = "✅ Copiado";
+  setTimeout(()=> btn.innerText = txt, 1200);
 }
 
 /* INIT */
