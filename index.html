@@ -333,49 +333,6 @@
             Cualquier duda o consulta, estamos para ayudarlo 😊`;
         }
 
-        function genCredito1() {
-            let d = calc(true);
-            let cuerpo = d.lineas.join("\n");
-
-            let c3 = d.total / 3;
-            let c4 = d.total / 4;
-
-            resultado.innerText =
-            `📋 *PRESUPUESTO CRÉDITO*
-
-            ${cuerpo}
-
-            ────────────────────
-            💰 *TOTAL: $ ${Math.round(d.total).toLocaleString()}*
-
-            📆 *Plan 3 cuotas:*
-            Entrega + 2 de *$ ${Math.round(c3).toLocaleString()}*
-
-            📆 *Plan 4 cuotas:*
-            Entrega + 3 de *$ ${Math.round(c4).toLocaleString()}*
-
-            ────────────────────
-            🚚 Flete se abona al recibir
-            💰 Costo Flete *$ ${config.flete.toLocaleString()}*
-
-            📅 Entregas: Jueves, Viernes o Sábado (según zona)
-
-            ────────────────────
-            Para confirmar el pedido:
-            👉 Le enviamos el LINK de pago de la 1° CUOTA
-            👉 Luego nos pasa nombre, domicilio y ubicacion del celular
-
-            ────────────────────
-            💳 Sistema de CREDITO: *GO CUOTAS*
-            (Aprobación según perfil del cliente).
-            Se abona una entrega y el resto en cuotas fijas sin interés.
-
-            ✔ 3 o 4 cuotas fijas SEGUN APROBACIÓN DE CRÉDITO
-            ✔ ACEPTA DEBITOS DE MercadoPago, Naranja X, AUH, Jubilados, Becas, etc.
-
-            ────────────────────`;
-        }
-
         function genCredito() {
             let d = calc(true);
 
@@ -414,7 +371,6 @@
 
         ${cuerpo}
 
-        ────────────────────
         💰 *TOTAL: $ ${total.toLocaleString()}*
 
         💳 *Plan 3 cuotas de $ ${c3.toLocaleString()}*
@@ -432,11 +388,10 @@
         ────────────────────
         💳 Trabajamos con *GO CUOTAS*
         (Aprobación según perfil del cliente)
-
         ✔ 3 o 4 cuotas fijas según aprobación
         ✔ Acepta MercadoPago, Naranja X, AUH, Jubilados, Becas, etc.
-
-        ────────────────────`;
+        ────────────────────
+        Cualquier duda o consulta, estamos para ayudarlo 😊`;
         }
 
         function copiar(e) {
