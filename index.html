@@ -1,272 +1,501 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Cotizador Chapas</title>
+
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#25D366" />
+
+    <style>
+      body {
+        font-family: Arial;
+        max-width: 420px;
+        margin: auto;
+        padding: 10px;
+        background: #f5f5f5;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+      }
+      button {
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      .btn-medida {
+        background: #ddd;
+      }
+      .btn-add {
+        background: #a8aa31;
+        color: rgb(0, 0, 0);
+      }
+      .btn-sec {
+        background: #007bff;
+        color: white;
+      }
+      .btn-danger {
+        background: #ff4d4d;
+        color: white;
+      }
+
+      .item {
+        background: white;
+        padding: 8px;
+        margin-top: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .controls button {
+        padding: 5px 10px;
+        margin-left: 5px;
+      }
+
+      #resultado {
+        background: white;
+        padding: 10px;
+        margin-top: 10px;
+        white-space: pre-line;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 3px;
+      }
+      label {
+        font-size: 13px;
+        color: #333;
+        margin-top: 8px;
+        display: block;
+      }
+
+      .config {
+        background: #fff;
+        padding: 10px;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>🛠️ Cotizador</h2>
+
+    <!-- TABS -->
+    <div style="display: flex; gap: 5px; margin-bottom: 10px">
+      <button onclick="mostrarTab('cotizador')" id="tabCot" class="btn-sec">
+        Cotizador
+      </button>
+      <button onclick="mostrarTab('config')" id="tabConf">Configuración</button>
+    </div>
+
+    <!-- COTIZADOR -->
+    <div id="cotizadorTab">
+      <h3>CH N27</h3>
+      <div class="grid" id="n27"></div>
+
+      <h3>CH N25</h3>
+      <div class="grid" id="n25"></div>
+
+      <h3>Perfiles</h3>
+      <button class="btn-add" onclick="addPerfil('P80')">+ Perfil 80x40</button>
+      <button class="btn-add" onclick="addPerfil('P100')">
+        + Perfil 100x40
+      </button>
+
+      <h3>Detalle</h3>
+      <div id="lista"></div>
+
+      <button class="btn-add" onclick="genEfectivo()">💰 Efectivo</button>
+      <button class="btn-sec" onclick="genCredito()">💳 Crédito</button>
+
+      <div id="resultado"></div>
+
+      <button class="btn-add" onclick="copiar(event)">📋 Copiar</button>
+      <button class="btn-danger" onclick="limpiarTodo()">🧹 Limpiar</button>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="configTab" style="display: none" class="config">
+      <h3>⚙️ Configuración</h3>
+
+      <label>Precio CH N27 (por metro)</label>
+      <input id="cN27" />
+
+      <label>Precio CH N25 (por metro)</label>
+      <input id="cN25" />
+
+      <label>Precio Perfil 80x40x6m</label>
+      <input id="cP80" />
+
+      <label>Precio Perfil 100x40x6m</label>
+      <input id="cP100" />
+
+      <label>Interés (ej: 1.41 = 41%)</label>
+      <input id="cInteres" />
+
+      <label>Costo de Flete</label>
+      <input id="cFlete" />
+
+      <button onclick="guardar()">💾 Guardar Configuración</button>
+    </div>
+
+    <script>
+        let items = [];
+
+        let config = JSON.parse(localStorage.getItem("cfg")) || {
+            N27: 8500,
+            N25: 9500,
+            P80: 35000,
+            P100: 38000,
+            interes: 1.41,
+            flete: 25000,
+        };
+
+        function limpiarResultado() {
+            resultado.innerText = "";
+        }
+
+        function limpiarTodo() {
+            items = [];
+            render();
+            limpiarResultado();
+        }
+
+        function mostrarTab(tab) {
+            cotizadorTab.style.display = tab === "cotizador" ? "block" : "none";
+            configTab.style.display = tab === "config" ? "block" : "none";
+
+            tabCot.classList.toggle("btn-sec", tab === "cotizador");
+            tabConf.classList.toggle("btn-sec", tab === "config");
+        }
+
+        function guardar() {
+            config = {
+            N27: +cN27.value,
+            N25: +cN25.value,
+            P80: +cP80.value,
+            P100: +cP100.value,
+            interes: +cInteres.value,
+            flete: +cFlete.value,
+            };
+            localStorage.setItem("cfg", JSON.stringify(config));
+            alert("Configuración guardada");
+            cargarUI();
+        }
+
+        function cargarUI() {
+            cN27.value = config.N27;
+            cN25.value = config.N25;
+            cP80.value = config.P80;
+            cP100.value = config.P100;
+            cInteres.value = config.interes;
+            cFlete.value = config.flete;
+        }
+
+        function renderBotones() {
+            let m27 = [3.05, 3.66, 4.27, 4.88, 5.5, 6.1];
+            let m25 = [3.05, 3.5, 3.66, 4.27, 4.88, 5.0, 5.5, 6.1, 6.5];
+
+            n27.innerHTML = m27
+            .map(
+                (m) =>
+                `<button class="btn-medida" onclick="addChapa('N27',${m})">${m}</button>`,
+            )
+            .join("");
+            n25.innerHTML = m25
+            .map(
+                (m) =>
+                `<button class="btn-medida" onclick="addChapa('N25',${m})">${m}</button>`,
+            )
+            .join("");
+        }
+
+        function addChapa(tipo, medida) {
+            let f = items.find((i) => i.tipo === tipo && i.medida === medida);
+            if (f) f.cant++;
+            else items.push({ tipo, medida, cant: 1 });
+            render();
+            limpiarResultado();
+        }
+
+        function addPerfil(tipo) {
+            let f = items.find((i) => i.tipo === tipo);
+            if (f) f.cant++;
+            else items.push({ tipo, cant: 1 });
+            render();
+            limpiarResultado();
+        }
+
+        function render() {
+            lista.innerHTML = items
+            .map((i, idx) => {
+                return `<div class="item">
+        <span>${i.cant} ${i.tipo} ${i.medida ? "x " + i.medida + "m" : ""}</span>
+        <div class="controls">
+            <button onclick="mod(${idx},-1)">-</button>
+            <button onclick="mod(${idx},1)">+</button>
+            <button class="btn-danger" onclick="del(${idx})">x</button>
+        </div>
+        </div>`;
+            })
+            .join("");
+        }
+
+        function mod(i, v) {
+            items[i].cant += v;
+            if (items[i].cant <= 0) items.splice(i, 1);
+            render();
+            limpiarResultado();
+        }
+
+        function del(i) {
+            items.splice(i, 1);
+            render();
+            limpiarResultado();
+        }
+
+        function calc1(interes = false) {
+        let total = 0,
+        txt = "";
+        items.forEach((i) => {
+        let sub = i.tipo.startsWith("P")
+        ? i.cant * config[i.tipo]
+        : i.cant * i.medida * config[i.tipo];
+
+        if (interes) sub *= config.interes;
+
+        total += sub;
+
+        let nombre = "";
+
+        if(i.tipo === "N27") nombre = "CH N27";
+        if(i.tipo === "N25") nombre = "CH N25";
+        if(i.tipo === "P80") nombre = "PERFIL C 80x40x6m";
+        if(i.tipo === "P100") nombre = "PERFIL C 100x40x6m";
+
+        txt += `${i.cant} ${nombre} ${i.medida ? "x "+i.medida+" m" : ""} *$ ${Math.round(sub).toLocaleString()}*\n`;
+
+
+
+        });
+        return { total, txt };
+      }
+
+        function genEfectivo1() {
+        let d = calc(false);
+        resultado.innerText = `Presupuesto en Efectivo:
+
+                        ${d.txt}
+
+                        Total Efectivo: $ ${(d.total).toLocaleString()}
+                        Puede Retirar en Nuestro Depósito sin costo.
+
+                        ---------------------
+
+                        Opcional FLETE $ ${config.flete.toLocaleString()}
+
+                        Total con FLETE: $ ${(d.total + config.flete).toLocaleString()}
+
+                        Se Abona en el momento de entrega de los Materiales.
+
+                        Para tomar su pedido nos indica su nombre completo
+                        y domicilio con la ubicacion exacta para coordinar la entrega.
+
+                        Los Dias de Entrega son Jueves, Viernes o Sabado
+                        (Dependiendo de la zona).
+
+                        ----------------------
+                        Si desea abonar con TRANSFERENCIA tiene un RECARGO del 3% de MercadoPago. 
+
+                        Total Transferencia: $ ${Math.round((d.total) * 1.03).toLocaleString()}
+
+                        Transferencia + FLETE: $ ${Math.round((d.total + config.flete) * 1.03).toLocaleString()}
+                        ----------------------
+
+                        CUALQUIER DUDA O CONSULTA, NO DUDE EN CONTACTARNOS, ESTAMOS PARA AYUDARLO.
+
+                        `;
+      }
+
+        function genCredito1() {
+        let d = calc(true);
+        let c3 = d.total / 3,
+          c4 = d.total / 4;
+
+        resultado.innerText = `--------------------
+                        Presupuesto Credito:
+                        ---------------------
+                        Se abona una entrega al momento de tomar el pedido 
+                        y el resto lo divide en 2 o 3 cuotas fijas sin interes.
+                        Se gestiona a Traves de la Plataforma GO CUOTAS.
+                        Dependiendo de si es cliente nuevo o no,
+                        le daran credito para 3 o 4 cuotas fijas.
+                        EL PAGO SE REALIZA CON CUALQUIER TRAJETA DE DEBITO
+                        MERCADOPAGO, NARANJA X, AUH, JUBILADOS, BECAS, ETC.
+                        ---------------------
+
+                        ${d.txt}
+
+                        Total $ ${Math.round(d.total).toLocaleString()}
+
+                        * Plan 3 Cuotas Fijas:
+                            - Entrega + 2 Cuotas de $ ${Math.round(c3).toLocaleString()}
+
+                        * Plan 4 Cuotas Fijas:
+                            - Entrega + 3 Cuotas de $ ${Math.round(c4).toLocaleString()}
 
-<title>Cotizador Chapas</title>
+                        El Flete se Abona aparte cuando le descargan las chapas
+                        Costo del Flete $ ${config.flete.toLocaleString()}
+                        Los Dias de Entrega son Jueves, Viernes o Sabado
+                        (Dependiendo de la zona).
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#25D366">
+                        -----------------------------------
+                        Para tomar su pedido, le paso el LINK para que abone la entrega.
+                        una vez confirmado el pago, nos indica su nombre completo
+                        y domicilio con la ubicacion exacta para coordinar la entrega.
+                        ----------------------------------`;
+      }
 
-<style>
-body { font-family: Arial; max-width:420px; margin:auto; padding:10px; background:#f5f5f5;}
+        function calc(interes=false){
+        let total=0;
+        let lineas=[];
 
-.grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px;}
-button { padding:12px; border:none; border-radius:6px; cursor:pointer;}
+        items.forEach(i=>{
+            let sub = i.tipo.startsWith("P")
+            ? i.cant*config[i.tipo]
+            : i.cant*i.medida*config[i.tipo];
 
-.btn-medida { background:#ddd;}
-.btn-add { background:#25D366; color:white;}
-.btn-sec { background:#007bff; color:white;}
-.btn-danger { background:#ff4d4d; color:white;}
+            if(interes) sub*=config.interes;
 
-.item { background:white; padding:8px; margin-top:5px; display:flex; justify-content:space-between; align-items:center;}
-.controls button { padding:5px 10px; margin-left:5px;}
+            total+=sub;
 
-#resultado { background:white; padding:10px; margin-top:10px; white-space:pre-line;}
+            let nombre = "";
+            if(i.tipo==="N27") nombre="CH N27";
+            if(i.tipo==="N25") nombre="CH N25";
+            if(i.tipo==="P80") nombre="PERFIL C 80X40";
+            if(i.tipo==="P100") nombre="PERFIL C 100X40";
 
-input { width:100%; padding:10px; margin-top:3px;}
-label { font-size:13px; color:#333; margin-top:8px; display:block;}
+            let desc = `${i.cant} ${nombre} ${i.medida? "x "+i.medida+" m":""}`;
+            desc = desc.padEnd(25, " ");
 
-.config { background:#fff; padding:10px; margin-top:10px;}
-</style>
-</head>
+            let precio = `*$ ${Math.round(sub).toLocaleString()}*`;
 
-<body>
+            lineas.push(desc + precio);
+        });
 
-<h2>🛠️ Cotizador</h2>
+        return {total, lineas};
+    }
 
-<!-- TABS -->
-<div style="display:flex; gap:5px; margin-bottom:10px;">
-  <button onclick="mostrarTab('cotizador')" id="tabCot" class="btn-sec">Cotizador</button>
-  <button onclick="mostrarTab('config')" id="tabConf">Configuración</button>
-</div>
+        function genEfectivo() {
+            let d = calc(false);
+            let cuerpo = d.lineas.join("\n");
 
-<!-- COTIZADOR -->
-<div id="cotizadorTab">
+            resultado.innerText =
+            `📋 *PRESUPUESTO EN EFECTIVO*
 
-<h3>CH N27</h3>
-<div class="grid" id="n27"></div>
+            ${cuerpo}
 
-<h3>CH N25</h3>
-<div class="grid" id="n25"></div>
+            ────────────────────
+            💰 *TOTAL EFECTIVO: $ ${d.total.toLocaleString()}*
 
-<h3>Perfiles</h3>
-<button class="btn-add" onclick="addPerfil('P80')">+ Perfil 80x40</button>
-<button class="btn-add" onclick="addPerfil('P100')">+ Perfil 100x40</button>
+            🏠 Puede retirar en nuestro depósito sin costo.
 
-<h3>Detalle</h3>
-<div id="lista"></div>
+            ────────────────────
+            🚚 Opcional Flete        *$ ${config.flete.toLocaleString()}*
+            💰 Total con Flete       *$ ${(d.total + config.flete).toLocaleString()}*
 
-<button class="btn-add" onclick="genEfectivo()">💰 Efectivo</button>
-<button class="btn-sec" onclick="genCredito()">💳 Crédito</button>
+            Se abona al momento de la entrega de los materiales.
 
-<div id="resultado"></div>
+            Para tomar su pedido indíquenos:
+            👉 Nombre completo  
+            👉 Domicilio con ubicación exacta  
 
-<button class="btn-add" onclick="copiar(event)">📋 Copiar</button>
-<button class="btn-danger" onclick="limpiarTodo()">🧹 Limpiar</button>
+            📅 Entregas: Jueves, Viernes o Sábado (según zona)
 
-</div>
+            ────────────────────
+            💳 *Transferencia (recargo 3% MercadoPago)*
 
-<!-- CONFIG -->
-<div id="configTab" style="display:none;" class="config">
+            💰 Total Transferencia        *$ ${Math.round(d.total * 1.03).toLocaleString()}*
+            💰 Transferencia + Flete      *$ ${Math.round((d.total + config.flete) * 1.03).toLocaleString()}*
 
-<h3>⚙️ Configuración</h3>
+            ────────────────────
+            Cualquier duda o consulta, estamos para ayudarlo 😊`;
+        }
 
-<label>Precio CH N27 (por metro)</label>
-<input id="cN27">
+        function genCredito() {
+            let d = calc(true);
+            let cuerpo = d.lineas.join("\n");
 
-<label>Precio CH N25 (por metro)</label>
-<input id="cN25">
+            let c3 = d.total / 3;
+            let c4 = d.total / 4;
 
-<label>Precio Perfil 80x40x6m</label>
-<input id="cP80">
+            resultado.innerText =
+            `📋 *PRESUPUESTO CRÉDITO*
 
-<label>Precio Perfil 100x40x6m</label>
-<input id="cP100">
+            ────────────────────
+            Se abona una entrega al tomar el pedido  
+            y el resto en cuotas fijas sin interés.
 
-<label>Interés (ej: 1.41 = 41%)</label>
-<input id="cInteres">
-
-<label>Costo de Flete</label>
-<input id="cFlete">
-
-<button onclick="guardar()">💾 Guardar Configuración</button>
-
-</div>
-
-<script>
-
-let items = [];
-
-let config = JSON.parse(localStorage.getItem("cfg")) || {
-  N27:8500,N25:9500,P80:35000,P100:38000,interes:1.41,flete:25000
-};
-
-function limpiarResultado(){
-  resultado.innerText = "";
-}
-
-function limpiarTodo(){
-  items = [];
-  render();
-  limpiarResultado();
-}
-
-function mostrarTab(tab){
-  cotizadorTab.style.display = tab==="cotizador" ? "block":"none";
-  configTab.style.display = tab==="config" ? "block":"none";
-
-  tabCot.classList.toggle("btn-sec", tab==="cotizador");
-  tabConf.classList.toggle("btn-sec", tab==="config");
-}
-
-function guardar(){
-  config={
-    N27:+cN27.value,
-    N25:+cN25.value,
-    P80:+cP80.value,
-    P100:+cP100.value,
-    interes:+cInteres.value,
-    flete:+cFlete.value
-  };
-  localStorage.setItem("cfg",JSON.stringify(config));
-  alert("Configuración guardada");
-  cargarUI();
-}
-
-function cargarUI(){
-  cN27.value=config.N27;
-  cN25.value=config.N25;
-  cP80.value=config.P80;
-  cP100.value=config.P100;
-  cInteres.value=config.interes;
-  cFlete.value=config.flete;
-}
-
-function renderBotones(){
-  let m27=[3.05,3.66,4.27,4.88,5.50,6.10];
-  let m25=[3.05,3.50,3.66,4.27,4.88,5.50,6.10,6.50];
-
-  n27.innerHTML = m27.map(m=>`<button class="btn-medida" onclick="addChapa('N27',${m})">${m}</button>`).join("");
-  n25.innerHTML = m25.map(m=>`<button class="btn-medida" onclick="addChapa('N25',${m})">${m}</button>`).join("");
-}
-
-function addChapa(tipo,medida){
-  let f = items.find(i=>i.tipo===tipo && i.medida===medida);
-  if(f) f.cant++;
-  else items.push({tipo,medida,cant:1});
-  render();
-  limpiarResultado();
-}
-
-function addPerfil(tipo){
-  let f = items.find(i=>i.tipo===tipo);
-  if(f) f.cant++;
-  else items.push({tipo,cant:1});
-  render();
-  limpiarResultado();
-}
-
-function render(){
-  lista.innerHTML = items.map((i,idx)=>{
-    return `<div class="item">
-      <span>${i.cant} ${i.tipo} ${i.medida? "x "+i.medida+"m":""}</span>
-      <div class="controls">
-        <button onclick="mod(${idx},-1)">-</button>
-        <button onclick="mod(${idx},1)">+</button>
-        <button class="btn-danger" onclick="del(${idx})">x</button>
-      </div>
-    </div>`;
-  }).join("");
-}
-
-function mod(i,v){
-  items[i].cant+=v;
-  if(items[i].cant<=0) items.splice(i,1);
-  render();
-  limpiarResultado();
-}
-
-function del(i){
-  items.splice(i,1);
-  render();
-  limpiarResultado();
-}
-
-function calc(interes=false){
-  let total=0, txt="";
-  items.forEach(i=>{
-    let sub = i.tipo.startsWith("P")
-      ? i.cant*config[i.tipo]
-      : i.cant*i.medida*config[i.tipo];
-
-    if(interes) sub*=config.interes;
-
-    total+=sub;
-
-    txt+=`${i.cant} ${i.tipo} ${i.medida? "x "+i.medida+" m":""} $ ${Math.round(sub).toLocaleString()}\n`;
-  });
-  return {total,txt};
-}
-
-function genEfectivo(){
-  let d=calc(false);
-  resultado.innerText=
-`Consulta x Efectivo:
-
-${d.txt}Flete $ ${config.flete.toLocaleString()}
-
-Total $ ${(d.total+config.flete).toLocaleString()} se abona en la entrega.
-
-Tomamos el pedido y lo paga cuando le bajan las chapas.
-Dias de Entrega Jueves a la tarde, Viernes o Sabado.`;
-}
-
-function genCredito(){
-  let d=calc(true);
-  let c3=d.total/3, c4=d.total/4;
-
-  resultado.innerText=
-`Consulta x Credito:
-
-${d.txt}
-Total $ ${Math.round(d.total).toLocaleString()}
-
-Plan 3 Cuotas Fijas:
-Entrega y 2 Cuotas de $ ${Math.round(c3).toLocaleString()}
-
-Plan 4 Cuotas Fijas:
-Entrega y 3 Cuotas de $ ${Math.round(c4).toLocaleString()}
-
-El Flete lo abona aparte cuando le descargan las chapas
-Flete $ ${config.flete.toLocaleString()}
-
-Tomamos el pedido, le paso el link para que abone la entrega.
-Solo tiene que pagar el flete cuando le bajan las chapas.
-Dias de Entrega Jueves a la tarde, Viernes o Sabado.`;
-}
-
-function copiar(e){
-  navigator.clipboard.writeText(resultado.innerText);
-
-  let btn = e.target;
-  let txt = btn.innerText;
-
-  btn.innerText = "✅ Copiado";
-  setTimeout(()=> btn.innerText = txt, 1200);
-}
-
-/* INIT */
-renderBotones();
-cargarUI();
-
-/* SERVICE WORKER */
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-}
-
-</script>
-
-</body>
+            💳 Sistema: *GO CUOTAS*  
+            (Aprobación según perfil del cliente)
+
+            ✔ 3 o 4 cuotas fijas  
+            ✔ Débito, MercadoPago, Naranja X, AUH, Jubilados, Becas, etc.
+
+            ────────────────────
+
+            ${cuerpo}
+
+            ────────────────────
+            💰 *TOTAL: $ ${Math.round(d.total).toLocaleString()}*
+
+            📆 *Plan 3 cuotas:*
+            Entrega + 2 de *$ ${Math.round(c3).toLocaleString()}*
+
+            📆 *Plan 4 cuotas:*
+            Entrega + 3 de *$ ${Math.round(c4).toLocaleString()}*
+
+            ────────────────────
+            🚚 Flete se abona al recibir
+            💰 Costo Flete *$ ${config.flete.toLocaleString()}*
+
+            📅 Entregas: Jueves, Viernes o Sábado (según zona)
+
+            ────────────────────
+            Para confirmar el pedido:
+            👉 Le enviamos el link de pago de la entrega  
+            👉 Luego nos pasa nombre y domicilio  
+
+            ────────────────────`;
+        }
+
+        function copiar(e) {
+            navigator.clipboard.writeText(resultado.innerText);
+
+            let btn = e.target;
+            let txt = btn.innerText;
+
+            btn.innerText = "✅ Copiado";
+            setTimeout(() => (btn.innerText = txt), 1200);
+        }
+
+        /* INIT */
+        renderBotones();
+        cargarUI();
+
+        /* SERVICE WORKER */
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("service-worker.js");
+        }
+    </script>
+  </body>
 </html>
