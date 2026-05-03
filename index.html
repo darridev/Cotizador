@@ -381,8 +381,8 @@
             let nombre = "";
             if(i.tipo==="N27") nombre="CH N27";
             if(i.tipo==="N25") nombre="CH N25";
-            if(i.tipo==="P80") nombre="PERFIL C 80X40";
-            if(i.tipo==="P100") nombre="PERFIL C 100X40";
+            if(i.tipo==="P80") nombre="PERFIL C 80x40x6m";
+            if(i.tipo==="P100") nombre="PERFIL C 100x40x6m";
 
             let desc = `${i.cant} ${nombre} ${i.medida? "x "+i.medida+" m":""}`;
             desc = desc.padEnd(25, " ");
@@ -411,23 +411,26 @@
 
             ────────────────────
             🚚 Opcional Flete        *$ ${config.flete.toLocaleString()}*
+
             💰 Total con Flete       *$ ${(d.total + config.flete).toLocaleString()}*
 
-            Se abona al momento de la entrega de los materiales.
+            Se abona EL TOTAL al momento de la entrega de los materiales.
 
             Para tomar su pedido indíquenos:
-            👉 Nombre completo  
-            👉 Domicilio con ubicación exacta  
+            👉 Nombre completo
+            👉 Domicilio y ubicación del celular.
 
             📅 Entregas: Jueves, Viernes o Sábado (según zona)
 
             ────────────────────
-            💳 *Transferencia (recargo 3% MercadoPago)*
+            💳 *Transferencia*
+                (recargo 3% MercadoPago)
 
-            💰 Total Transferencia        *$ ${Math.round(d.total * 1.03).toLocaleString()}*
-            💰 Transferencia + Flete      *$ ${Math.round((d.total + config.flete) * 1.03).toLocaleString()}*
+            💰 Transferencia              *$ ${Math.round(d.total * 1.03).toLocaleString()}*
 
+            💰 Transferencia C/FLETE      *$ ${Math.round((d.total + config.flete) * 1.03).toLocaleString()}*
             ────────────────────
+
             Cualquier duda o consulta, estamos para ayudarlo 😊`;
         }
 
@@ -440,18 +443,6 @@
 
             resultado.innerText =
             `📋 *PRESUPUESTO CRÉDITO*
-
-            ────────────────────
-            Se abona una entrega al tomar el pedido  
-            y el resto en cuotas fijas sin interés.
-
-            💳 Sistema: *GO CUOTAS*  
-            (Aprobación según perfil del cliente)
-
-            ✔ 3 o 4 cuotas fijas  
-            ✔ Débito, MercadoPago, Naranja X, AUH, Jubilados, Becas, etc.
-
-            ────────────────────
 
             ${cuerpo}
 
@@ -472,8 +463,16 @@
 
             ────────────────────
             Para confirmar el pedido:
-            👉 Le enviamos el link de pago de la entrega  
-            👉 Luego nos pasa nombre y domicilio  
+            👉 Le enviamos el LINK de pago de la 1° CUOTA
+            👉 Luego nos pasa nombre, domicilio y ubicacion del celular
+
+            ────────────────────
+            💳 Sistema de CREDITO: *GO CUOTAS*
+            (Aprobación según perfil del cliente).
+            Se abona una entrega y el resto en cuotas fijas sin interés.
+
+            ✔ 3 o 4 cuotas fijas SEGUN APROBACIÓN DE CRÉDITO
+            ✔ ACEPTA DEBITOS DE MercadoPago, Naranja X, AUH, Jubilados, Becas, etc.
 
             ────────────────────`;
         }
