@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizador Chapas PRO</title>
+
+<style>
+body { font-family: Arial; max-width: 420px; margin:auto; padding:10px; background:#f5f5f5;}
+h3 { margin:10px 0 5px; }
+
+.grid { display:grid; grid-template-columns: repeat(3,1fr); gap:5px; }
+button { padding:12px; border:none; border-radius:6px; }
+
+.btn-medida { background:#ddd; }
+.btn-add { background:#25D366; color:white; }
+.btn-danger { background:#ff4d4d; color:white; }
+.btn-sec { background:#007bff; color:white; }
+
+.item { background:white; padding:8px; margin-top:5px; display:flex; justify-content:space-between; align-items:center;}
+.controls button { padding:5px 10px; margin-left:5px; }
+
+#resultado { background:white; padding:10px; margin-top:10px; white-space:pre-line;}
+input { width:100%; padding:10px; margin-top:5px;}
+.config { background:#fff; padding:10px; margin-top:10px;}
+</style>
+</head>
+
+<body>
+
+<h2>🛠️ Cotizador</h2>
+
+<h3>CH N27</h3>
+<div class="grid" id="n27"></div>
+
+<h3>CH N25</h3>
+<div class="grid" id="n25"></div>
+
+<h3>Perfiles</h3>
+<button class="btn-add" onclick="addPerfil('P80')">+ Perfil 80x40</button>
+<button class="btn-add" onclick="addPerfil('P100')">+ Perfil 100x40</button>
+
+<h3>Detalle</h3>
+<div id="lista"></div>
+
+<button class="btn-add" onclick="genEfectivo()">💰 Efectivo</button>
+<button class="btn-sec" onclick="genCredito()">💳 Crédito</button>
+
+<div id="resultado"></div>
+
+<button class="btn-add" onclick="copiar()">📋 Copiar</button>
+<button class="btn-sec" onclick="enviar()">📲 WhatsApp</button>
+
+<div class="config">
+<h3>⚙️ Configuración</h3>
+<input id="cN27" placeholder="Precio N27">
+<input id="cN25" placeholder="Precio N25">
+<input id="cP80" placeholder="Perfil 80">
+<input id="cP100" placeholder="Perfil 100">
+<input id="cInteres" placeholder="Interés (1.41)">
+<input id="cFlete" placeholder="Flete">
+<button onclick="guardar()">Guardar</button>
+</div>
+
+<script>
+let items = [];
+
+let config = JSON.parse(localStorage.getItem("cfg")) || {
+  N27:8500,N25:9500,P80:35000,P100:38000,interes:1.41,flete:25000
+};
+
+function guardar(){
+  config={
+    N27:+cN27.value,N25:+cN25.value,
+    P80:+cP80.value,P100:+cP100.value,
+    interes:+cInteres.value,flete:+cFlete.value
+  };
+  localStorage.setItem("cfg",JSON.stringify(config));
+  alert("Guardado");
+  cargarUI();
+}
+
+function cargarUI(){
+  cN27.value=config.N27;
+  cN25.value=config.N25;
+  cP80.value=config.P80;
+  cP100.value=config.P100;
+  cInteres.value=config.interes;
+  cFlete.value=config.flete;
+}
+
+function renderBotones(){
+  let m27=[3.05,3.66,4.27,4.88,5.50,6.10];
+  let m25=[3.05,3.50,3.66,4.27,4.88,5.50,6.10,6.50];
+
+  n27.innerHTML = m27.map(m=>`<button class="btn-medida" onclick="addChapa('N27',${m})">${m}</button>`).join("");
+  n25.innerHTML = m25.map(m=>`<button class="btn-medida" onclick="addChapa('N25',${m})">${m}</button>`).join("");
+}
+
+function addChapa(tipo,medida){
+  let f = items.find(i=>i.tipo===tipo && i.medida===medida);
+  if(f) f.cant++;
+  else items.push({tipo,medida,cant:1});
+  render();
+}
+
+function addPerfil(tipo){
+  let f = items.find(i=>i.tipo===tipo);
+  if(f) f.cant++;
+  else items.push({tipo,cant:1});
+  render();
+}
+
+function render(){
+  lista.innerHTML = items.map((i,idx)=>{
+    return `<div class="item">
+      <span>${i.cant} ${i.tipo} ${i.medida? "x "+i.medida+"m":""}</span>
+      <div class="controls">
+        <button onclick="mod(${idx},-1)">-</button>
+        <button onclick="mod(${idx},1)">+</button>
+        <button class="btn-danger" onclick="del(${idx})">x</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function mod(i,v){
+  items[i].cant+=v;
+  if(items[i].cant<=0) items.splice(i,1);
+  render();
+}
+
+function del(i){ items.splice(i,1); render(); }
+
+function calc(interes=false){
+  let total=0, txt="";
+  items.forEach(i=>{
+    let sub = i.tipo.startsWith("P")
+      ? i.cant*config[i.tipo]
+      : i.cant*i.medida*config[i.tipo];
+
+    if(interes) sub*=config.interes;
+
+    total+=sub;
+
+    txt+=`${i.cant} ${i.tipo} ${i.medida? "x "+i.medida+" m":""} $ ${Math.round(sub).toLocaleString()}\n`;
+  });
+  return {total,txt};
+}
+
+function genEfectivo(){
+  let d=calc(false);
+  resultado.innerText=
+`Consulta x Efectivo:
+
+${d.txt}Flete $ ${config.flete.toLocaleString()}
+
+Total $ ${(d.total+config.flete).toLocaleString()} se abona en la entrega.
+
+Tomamos el pedido y lo paga cuando le bajan las chapas.
+Dias de Entrega Jueves a la tarde, Viernes o Sabado.`;
+}
+
+function genCredito(){
+  let d=calc(true);
+  let c3=d.total/3, c4=d.total/4;
+
+  resultado.innerText=
+`Consulta x Credito:
+
+${d.txt}
+Total $ ${Math.round(d.total).toLocaleString()}
+
+Plan 3 Cuotas Fijas:
+Entrega y 2 Cuotas de $ ${Math.round(c3).toLocaleString()}
+
+Plan 4 Cuotas Fijas:
+Entrega y 3 Cuotas de $ ${Math.round(c4).toLocaleString()}
+
+El Flete lo abona aparte cuando le descargan las chapas
+Flete $ ${config.flete.toLocaleString()}
+
+Tomamos el pedido, le paso el link para que abone la entrega.
+Solo tiene que pagar el flete cuando le bajan las chapas.
+Dias de Entrega Jueves a la tarde, Viernes o Sabado.`;
+}
+
+function copiar(){
+  navigator.clipboard.writeText(resultado.innerText);
+  alert("Copiado");
+}
+
+function enviar(){
+  let num="5493794611965";
+  let url=`https://wa.me/${num}?text=${encodeURIComponent(resultado.innerText)}`;
+  window.open(url);
+}
+
+renderBotones();
+cargarUI();
+</script>
+
+</body>
+</html>
