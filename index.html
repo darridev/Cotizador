@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Cotizador Chapas</title>
+<title>Cotizador</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#25D366">
@@ -209,23 +209,25 @@ function genCredito(){
   let c3=d.total/3, c4=d.total/4;
 
   resultado.innerText=
-`Consulta x Credito:
+`Credito:
 
 ${d.txt}
 Total $ ${Math.round(d.total).toLocaleString()}
 
 Plan 3 Cuotas Fijas:
-Entrega y 2 Cuotas de $ ${Math.round(c3).toLocaleString()}
+ - Entrega y 2 Cuotas de $ ${Math.round(c3).toLocaleString()}
 
 Plan 4 Cuotas Fijas:
-Entrega y 3 Cuotas de $ ${Math.round(c4).toLocaleString()}
+ - Entrega y 3 Cuotas de $ ${Math.round(c4).toLocaleString()}
 
-El Flete lo abona aparte cuando le descargan las chapas
 Flete $ ${config.flete.toLocaleString()}
+Se Abona en la entrega de los materiales.
 
-Tomamos el pedido, le paso el link para que abone la entrega.
-Solo tiene que pagar el flete cuando le bajan las chapas.
-Dias de Entrega Jueves a la tarde, Viernes o Sabado.`;
+Tomamos el pedido, para entregar entre Jueves y Sabado
+
+Si esta interesado le paso link para que abone la entrega
+
+Solo tiene que pagar el flete cuando le bajan las chapas.`;
 }
 
 function copiar(){
