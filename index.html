@@ -3,24 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cotizador Chapas PRO</title>
+
+<title>Cotizador Chapas</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#25D366">
 
 <style>
-body { font-family: Arial; max-width: 420px; margin:auto; padding:10px; background:#f5f5f5;}
-h3 { margin:10px 0 5px; }
+body { font-family: Arial; max-width:420px; margin:auto; padding:10px; background:#f5f5f5;}
 
-.grid { display:grid; grid-template-columns: repeat(3,1fr); gap:5px; }
-button { padding:12px; border:none; border-radius:6px; }
+.grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px;}
+button { padding:12px; border:none; border-radius:6px;}
 
-.btn-medida { background:#ddd; }
-.btn-add { background:#25D366; color:white; }
-.btn-danger { background:#ff4d4d; color:white; }
-.btn-sec { background:#007bff; color:white; }
+.btn-medida { background:#ddd;}
+.btn-add { background:#25D366; color:white;}
+.btn-sec { background:#007bff; color:white;}
+.btn-danger { background:#ff4d4d; color:white;}
 
 .item { background:white; padding:8px; margin-top:5px; display:flex; justify-content:space-between; align-items:center;}
-.controls button { padding:5px 10px; margin-left:5px; }
+.controls button { padding:5px 10px; margin-left:5px;}
 
 #resultado { background:white; padding:10px; margin-top:10px; white-space:pre-line;}
+
 input { width:100%; padding:10px; margin-top:5px;}
 .config { background:#fff; padding:10px; margin-top:10px;}
 </style>
@@ -29,6 +33,15 @@ input { width:100%; padding:10px; margin-top:5px;}
 <body>
 
 <h2>🛠️ Cotizador</h2>
+
+<!-- TABS -->
+<div style="display:flex; gap:5px; margin-bottom:10px;">
+  <button onclick="mostrarTab('cotizador')" id="tabCot" class="btn-sec">Cotizador</button>
+  <button onclick="mostrarTab('config')" id="tabConf">Configuración</button>
+</div>
+
+<!-- COTIZADOR -->
+<div id="cotizadorTab">
 
 <h3>CH N27</h3>
 <div class="grid" id="n27"></div>
@@ -51,29 +64,52 @@ input { width:100%; padding:10px; margin-top:5px;}
 <button class="btn-add" onclick="copiar()">📋 Copiar</button>
 <button class="btn-sec" onclick="enviar()">📲 WhatsApp</button>
 
-<div class="config">
+</div>
+
+<!-- CONFIG -->
+<div id="configTab" style="display:none;" class="config">
+
 <h3>⚙️ Configuración</h3>
+
 <input id="cN27" placeholder="Precio N27">
 <input id="cN25" placeholder="Precio N25">
 <input id="cP80" placeholder="Perfil 80">
 <input id="cP100" placeholder="Perfil 100">
 <input id="cInteres" placeholder="Interés (1.41)">
 <input id="cFlete" placeholder="Flete">
+
 <button onclick="guardar()">Guardar</button>
+
 </div>
 
 <script>
+
 let items = [];
 
 let config = JSON.parse(localStorage.getItem("cfg")) || {
   N27:8500,N25:9500,P80:35000,P100:38000,interes:1.41,flete:25000
 };
 
+function limpiarResultado(){
+  resultado.innerText = "";
+}
+
+function mostrarTab(tab){
+  cotizadorTab.style.display = tab==="cotizador" ? "block":"none";
+  configTab.style.display = tab==="config" ? "block":"none";
+
+  tabCot.classList.toggle("btn-sec", tab==="cotizador");
+  tabConf.classList.toggle("btn-sec", tab==="config");
+}
+
 function guardar(){
   config={
-    N27:+cN27.value,N25:+cN25.value,
-    P80:+cP80.value,P100:+cP100.value,
-    interes:+cInteres.value,flete:+cFlete.value
+    N27:+cN27.value,
+    N25:+cN25.value,
+    P80:+cP80.value,
+    P100:+cP100.value,
+    interes:+cInteres.value,
+    flete:+cFlete.value
   };
   localStorage.setItem("cfg",JSON.stringify(config));
   alert("Guardado");
@@ -102,6 +138,7 @@ function addChapa(tipo,medida){
   if(f) f.cant++;
   else items.push({tipo,medida,cant:1});
   render();
+  limpiarResultado();
 }
 
 function addPerfil(tipo){
@@ -109,6 +146,7 @@ function addPerfil(tipo){
   if(f) f.cant++;
   else items.push({tipo,cant:1});
   render();
+  limpiarResultado();
 }
 
 function render(){
@@ -128,9 +166,14 @@ function mod(i,v){
   items[i].cant+=v;
   if(items[i].cant<=0) items.splice(i,1);
   render();
+  limpiarResultado();
 }
 
-function del(i){ items.splice(i,1); render(); }
+function del(i){
+  items.splice(i,1);
+  render();
+  limpiarResultado();
+}
 
 function calc(interes=false){
   let total=0, txt="";
@@ -196,8 +239,15 @@ function enviar(){
   window.open(url);
 }
 
+/* INIT */
 renderBotones();
 cargarUI();
+
+/* SERVICE WORKER */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+
 </script>
 
 </body>
