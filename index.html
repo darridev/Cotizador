@@ -84,6 +84,7 @@
         margin-top: 10px;
       }
     </style>
+  
   </head>
 
   <body>
@@ -263,108 +264,6 @@
             limpiarResultado();
         }
 
-        function calc1(interes = false) {
-        let total = 0,
-        txt = "";
-        items.forEach((i) => {
-        let sub = i.tipo.startsWith("P")
-        ? i.cant * config[i.tipo]
-        : i.cant * i.medida * config[i.tipo];
-
-        if (interes) sub *= config.interes;
-
-        total += sub;
-
-        let nombre = "";
-
-        if(i.tipo === "N27") nombre = "CH N27";
-        if(i.tipo === "N25") nombre = "CH N25";
-        if(i.tipo === "P80") nombre = "PERFIL C 80x40x6m";
-        if(i.tipo === "P100") nombre = "PERFIL C 100x40x6m";
-
-        txt += `${i.cant} ${nombre} ${i.medida ? "x "+i.medida+" m" : ""} *$ ${Math.round(sub).toLocaleString()}*\n`;
-
-
-
-        });
-        return { total, txt };
-      }
-
-        function genEfectivo1() {
-        let d = calc(false);
-        resultado.innerText = `Presupuesto en Efectivo:
-
-                        ${d.txt}
-
-                        Total Efectivo: $ ${(d.total).toLocaleString()}
-                        Puede Retirar en Nuestro Depósito sin costo.
-
-                        ---------------------
-
-                        Opcional FLETE $ ${config.flete.toLocaleString()}
-
-                        Total con FLETE: $ ${(d.total + config.flete).toLocaleString()}
-
-                        Se Abona en el momento de entrega de los Materiales.
-
-                        Para tomar su pedido nos indica su nombre completo
-                        y domicilio con la ubicacion exacta para coordinar la entrega.
-
-                        Los Dias de Entrega son Jueves, Viernes o Sabado
-                        (Dependiendo de la zona).
-
-                        ----------------------
-                        Si desea abonar con TRANSFERENCIA tiene un RECARGO del 3% de MercadoPago. 
-
-                        Total Transferencia: $ ${Math.round((d.total) * 1.03).toLocaleString()}
-
-                        Transferencia + FLETE: $ ${Math.round((d.total + config.flete) * 1.03).toLocaleString()}
-                        ----------------------
-
-                        CUALQUIER DUDA O CONSULTA, NO DUDE EN CONTACTARNOS, ESTAMOS PARA AYUDARLO.
-
-                        `;
-      }
-
-        function genCredito1() {
-        let d = calc(true);
-        let c3 = d.total / 3,
-          c4 = d.total / 4;
-
-        resultado.innerText = `--------------------
-                        Presupuesto Credito:
-                        ---------------------
-                        Se abona una entrega al momento de tomar el pedido 
-                        y el resto lo divide en 2 o 3 cuotas fijas sin interes.
-                        Se gestiona a Traves de la Plataforma GO CUOTAS.
-                        Dependiendo de si es cliente nuevo o no,
-                        le daran credito para 3 o 4 cuotas fijas.
-                        EL PAGO SE REALIZA CON CUALQUIER TRAJETA DE DEBITO
-                        MERCADOPAGO, NARANJA X, AUH, JUBILADOS, BECAS, ETC.
-                        ---------------------
-
-                        ${d.txt}
-
-                        Total $ ${Math.round(d.total).toLocaleString()}
-
-                        * Plan 3 Cuotas Fijas:
-                            - Entrega + 2 Cuotas de $ ${Math.round(c3).toLocaleString()}
-
-                        * Plan 4 Cuotas Fijas:
-                            - Entrega + 3 Cuotas de $ ${Math.round(c4).toLocaleString()}
-
-                        El Flete se Abona aparte cuando le descargan las chapas
-                        Costo del Flete $ ${config.flete.toLocaleString()}
-                        Los Dias de Entrega son Jueves, Viernes o Sabado
-                        (Dependiendo de la zona).
-
-                        -----------------------------------
-                        Para tomar su pedido, le paso el LINK para que abone la entrega.
-                        una vez confirmado el pago, nos indica su nombre completo
-                        y domicilio con la ubicacion exacta para coordinar la entrega.
-                        ----------------------------------`;
-      }
-
         function calc(interes=false){
         let total=0;
         let lineas=[];
@@ -434,7 +333,7 @@
             Cualquier duda o consulta, estamos para ayudarlo 😊`;
         }
 
-        function genCredito() {
+        function genCredito1() {
             let d = calc(true);
             let cuerpo = d.lineas.join("\n");
 
@@ -477,6 +376,69 @@
             ────────────────────`;
         }
 
+        function genCredito() {
+            let d = calc(true);
+
+            // 🔹 recalculamos líneas con redondeo SOLO para mostrar
+            let lineasRedondeadas = items.map(i => {
+                let sub = i.tipo.startsWith("P")
+                    ? i.cant * config[i.tipo]
+                    : i.cant * i.medida * config[i.tipo];
+
+                sub *= config.interes;
+
+                let nombre = "";
+                if(i.tipo==="N27") nombre="CH N27";
+                if(i.tipo==="N25") nombre="CH N25";
+                if(i.tipo==="P80") nombre="PERFIL C 80X40";
+                if(i.tipo==="P100") nombre="PERFIL C 100X40";
+
+                let desc = `${i.cant} ${nombre} ${i.medida ? "x "+i.medida+" m" : ""}`;
+                desc = desc.padEnd(25, " ");
+
+                let subRedondeado = redondear100(sub);
+
+                return desc + `*$ ${subRedondeado.toLocaleString()}*`;
+            });
+
+            let cuerpo = lineasRedondeadas.join("\n");
+
+            // 🔹 total redondeado
+            let total = redondear100(d.total);
+
+            let c3 = redondear100(total / 3);
+            let c4 = redondear100(total / 4);
+
+            resultado.innerText =
+        `📋 *PRESUPUESTO CRÉDITO*
+
+        ${cuerpo}
+
+        ────────────────────
+        💰 *TOTAL: $ ${total.toLocaleString()}*
+
+        💳 *Plan 3 cuotas de $ ${c3.toLocaleString()}*
+
+        💳 *Plan 4 cuotas: $ ${c4.toLocaleString()}*
+        ────────────────────
+        🚚 FLETE se abona al recibir los materiales
+        💰 Costo *$ ${config.flete.toLocaleString()}*
+
+        📅 Entregas: Jueves, Viernes o Sábado (según zona)
+        ────────────────────
+        *Para confirmar el pedido:*
+        👉 Le enviamos el *LINK de pago de la 1° CUOTA*
+        👉 Luego nos pasa nombre, domicilio y ubicación
+        ────────────────────
+        💳 Trabajamos con *GO CUOTAS*
+        (Aprobación según perfil del cliente)
+
+        ✔ 3 o 4 cuotas fijas según aprobación
+        ✔ Acepta MercadoPago, Naranja X, AUH, Jubilados, Becas, etc.
+
+        ────────────────────`;
+        }
+
         function copiar(e) {
             navigator.clipboard.writeText(resultado.innerText);
 
@@ -485,6 +447,10 @@
 
             btn.innerText = "✅ Copiado";
             setTimeout(() => (btn.innerText = txt), 1200);
+        }
+
+        function redondear100(n){
+          return Math.ceil(n / 100) * 100;
         }
 
         /* INIT */
