@@ -303,17 +303,16 @@
 
             ${cuerpo}
 
-            ────────────────────
             💰 *TOTAL EFECTIVO: $ ${d.total.toLocaleString()}*
 
             🏠 Puede retirar en nuestro depósito sin costo.
 
             ────────────────────
-            🚚 Opcional Flete        *$ ${config.flete.toLocaleString()}*
+            🚚 Opcional FLETE  *$ ${config.flete.toLocaleString()}*
 
-            💰 Total con Flete       *$ ${(d.total + config.flete).toLocaleString()}*
+            💰 Total con FLETE  *$ ${(d.total + config.flete).toLocaleString()}*
 
-            Se abona EL TOTAL al momento de la entrega de los materiales.
+            *Se abona el TOTAL al momento de la entrega de los materiales*
 
             Para tomar su pedido indíquenos:
             👉 Nombre completo
@@ -325,9 +324,9 @@
             💳 *Transferencia*
                 (recargo 3% MercadoPago)
 
-            💰 Transferencia              *$ ${Math.round(d.total * 1.03).toLocaleString()}*
+            💰 Transferencia  *$ ${Math.round(d.total * 1.03).toLocaleString()}*
 
-            💰 Transferencia C/FLETE      *$ ${Math.round((d.total + config.flete) * 1.03).toLocaleString()}*
+            💰 Con FLETE      *$ ${Math.round((d.total + config.flete) * 1.03).toLocaleString()}*
             ────────────────────
 
             Cualquier duda o consulta, estamos para ayudarlo 😊`;
@@ -373,11 +372,11 @@
 
         💰 *TOTAL: $ ${total.toLocaleString()}*
 
-        💳 *Plan 3 cuotas de $ ${c3.toLocaleString()}*
+        💳 *Plan 3 cuotas: $ ${c3.toLocaleString()}*
 
         💳 *Plan 4 cuotas: $ ${c4.toLocaleString()}*
         ────────────────────
-        🚚 FLETE se abona al recibir los materiales
+        🚚 *FLETE* Opcional y se Abona con la entrega de los materiales
         💰 Costo *$ ${config.flete.toLocaleString()}*
 
         📅 Entregas: Jueves, Viernes o Sábado (según zona)
@@ -388,7 +387,7 @@
         ────────────────────
         💳 Trabajamos con *GO CUOTAS*
         (Aprobación según perfil del cliente)
-        ✔ 3 o 4 cuotas fijas según aprobación
+        ✔ 3 o 4 cuotas fijas según aprobación.
         ✔ Acepta MercadoPago, Naranja X, AUH, Jubilados, Becas, etc.
         ────────────────────
         Cualquier duda o consulta, estamos para ayudarlo 😊`;
