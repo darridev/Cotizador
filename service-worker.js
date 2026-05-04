@@ -1,4 +1,4 @@
-const CACHE_NAME = "chapas-app-v2";
+const CACHE_NAME = "chapas-app-v2.1";
 
 self.addEventListener("install", e => {
   self.skipWaiting();
