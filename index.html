@@ -23,11 +23,13 @@
         grid-template-columns: repeat(3, 1fr);
         gap: 5px;
       }
+
       button {
-        padding: 12px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
+        padding:12px;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+        font-weight: bold;
       }
 
       .btn-medida {
@@ -107,10 +109,10 @@
       <div class="grid" id="n25"></div>
 
       <h3>Perfiles</h3>
-      <button class="btn-add" onclick="addPerfil('P80')">+ Perfil 80x40</button>
-      <button class="btn-add" onclick="addPerfil('P100')">
-        + Perfil 100x40
-      </button>
+      <div class="grid">
+        <button class="btn-medida" onclick="addPerfil('P80')">Perfil 80x40</button>
+        <button class="btn-medida" onclick="addPerfil('P100')">Perfil 100x40</button>
+      </div>
 
       <h3>Detalle</h3>
       <div id="lista"></div>
@@ -160,6 +162,13 @@
             interes: 1.35,
             flete: 25000,
         };
+
+        function formatMoney(n){
+          return Number(n).toLocaleString('es-AR', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+          });
+        }
 
         function limpiarResultado() {
             resultado.innerText = "";
@@ -286,7 +295,8 @@
             let desc = `${i.cant} ${nombre} ${i.medida? "x "+i.medida+" m":""}`;
             desc = desc.padEnd(25, " ");
 
-            let precio = `*$ ${Math.round(sub).toLocaleString()}*`;
+            //let precio = `*$ ${Math.round(sub).toLocaleString()}*`;
+            let precio = `*$ ${formatMoney(sub)}*`;
 
             lineas.push(desc + precio);
         });
@@ -303,30 +313,26 @@
 
             ${cuerpo}
 
-            💰 *TOTAL EFECTIVO: $ ${d.total.toLocaleString()}*
+            💰 *TOTAL EFECTIVO: $ ${formatMoney(d.total)}*
 
-            🏠 Puede retirar en nuestro depósito sin costo.
+            🚚 Opcional FLETE  *$ ${formatMoney(config.flete)}*
 
-            ────────────────────
-            🚚 Opcional FLETE  *$ ${config.flete.toLocaleString()}*
+            💰 Total con FLETE  *$ ${formatMoney(d.total + config.flete)}*
 
-            💰 Total con FLETE  *$ ${(d.total + config.flete).toLocaleString()}*
-
-            *Se abona el TOTAL al momento de la entrega de los materiales*
+            *PAGA EL TOTAL CONTRA ENTREGA DE LOS MATERIALES*
+            📅 Entregas: Jueves, Viernes o Sábado (según zona)
 
             Para tomar su pedido indíquenos:
             👉 Nombre completo
             👉 Domicilio y ubicación del celular.
 
-            📅 Entregas: Jueves, Viernes o Sábado (según zona)
-
             ────────────────────
-            💳 *Transferencia*
+            💳 *PAGO POR TRANSFERENCIA*
                 (recargo 3% MercadoPago)
 
-            💰 Transferencia  *$ ${Math.round(d.total * 1.03).toLocaleString()}*
+            💰 TOTAL    : *$ ${formatMoney(d.total * 1.03)}*
 
-            💰 Con FLETE      *$ ${Math.round((d.total + config.flete) * 1.03).toLocaleString()}*
+            💰 CON FLETE: *$ ${formatMoney((d.total + config.flete) * 1.03)}*
             ────────────────────
 
             Cualquier duda o consulta, estamos para ayudarlo 😊`;
@@ -354,7 +360,8 @@
 
                 let subRedondeado = redondear100(sub);
 
-                return desc + `*$ ${subRedondeado.toLocaleString()}*`;
+                //return desc + `*$ ${subRedondeado.toLocaleString()}*`;
+                return desc + `*$ ${formatMoney(subRedondeado)}*`;
             });
 
             let cuerpo = lineasRedondeadas.join("\n");
@@ -365,32 +372,34 @@
             let c3 = redondear100(total / 3);
             let c4 = redondear100(total / 4);
 
-            resultado.innerText =
-        `📋 *PRESUPUESTO CRÉDITO*
+            resultado.innerText = `📋 *PRESUPUESTO CRÉDITO*
 
-        ${cuerpo}
+                                      ${cuerpo}
 
-        💰 *TOTAL: $ ${total.toLocaleString()}*
+                                      💰 *TOTAL: $ ${formatMoney(total)}*
 
-        💳 *Plan 3 cuotas: $ ${c3.toLocaleString()}*
+                                      💳 *ENTREGA + 2 cuotas: $ ${formatMoney(c3)}*
 
-        💳 *Plan 4 cuotas: $ ${c4.toLocaleString()}*
-        ────────────────────
-        🚚 *FLETE* Opcional y se Abona con la entrega de los materiales
-        💰 Costo *$ ${config.flete.toLocaleString()}*
+                                      💳 *ENTREGA + 3 cuotas: $ ${formatMoney(c4)}*
 
-        📅 Entregas: Jueves, Viernes o Sábado (según zona)
-        ────────────────────
-        *Para confirmar el pedido:*
-        👉 Le enviamos el *LINK de pago de la 1° CUOTA*
-        👉 Luego nos pasa nombre, domicilio y ubicación
-        ────────────────────
-        💳 Trabajamos con *GO CUOTAS*
-        (Aprobación según perfil del cliente)
-        ✔ 3 o 4 cuotas fijas según aprobación.
-        ✔ Acepta MercadoPago, Naranja X, AUH, Jubilados, Becas, etc.
-        ────────────────────
-        Cualquier duda o consulta, estamos para ayudarlo 😊`;
+                                      🚚 Opcional FLETE: *$ ${formatMoney(config.flete)}*
+
+                                      Se Abona con la entrega de los materiales
+
+                                      📅 Entregas: Jueves, Viernes o Sábado (según zona)
+
+                                      ────────────────────
+                                      *Para confirmar el pedido:*
+                                      👉 Le enviamos el *LINK de la 1° CUOTA*
+                                      👉 *Una vez Aprobada*, nos pasa Nombre, Domicilio y Ubicación
+                                      ────────────────────
+                                      💳 Trabajamos con *GO CUOTAS*
+                                      (Aprobación según perfil del cliente)
+                                      ✔ 3 o 4 cuotas fijas según aprobación.
+                                      ✔ Acepta MercadoPago, Naranja X, AUH, Jubilados, Becas, etc.
+                                      ────────────────────
+
+                                      Cualquier duda o consulta, estamos para ayudarlo 😊`;
         }
 
         function copiar(e) {
